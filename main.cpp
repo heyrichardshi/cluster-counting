@@ -63,10 +63,10 @@ void propagate(int a, int b, int c) { // a = row, b = column, c = labels
     labels[a][b] = c;
     check[a][b] = 1;
 
-    if (a != m - 1) { // if not on bottom
+    if ((a != m - 1) && (labels[a + 1][b] != c)) { // if not on bottom
         propagate(a + 1, b, c);
     }
-    if (b != n - 1) {
+    if ((b != n - 1) && (labels[a][b + 1] != c)) {
         propagate(a, b + 1, c);
     }
 }
