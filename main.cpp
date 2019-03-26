@@ -21,6 +21,7 @@ void generateSpace(double p) {
             space[i][j] = p > RandomUniform() ? 1 : 0;
         }
     }
+    clusterCount = 0;
 }
 
 void printSpace() {
@@ -134,6 +135,80 @@ int label(int a, int b) {
     return labels[a][b];
 }
 
+void label() {
+    label(0, 0);
+}
+
+void label_brute() {
+    int changes = 0;
+
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (labels[i][j] == none) {
+                continue;
+            }
+            int current = labels[i][j];
+            if (i != 0) {
+                labels[i][j] = labels[i][j] < labels[i - 1][j] ? labels[i][j] : labels[i - 1][j];
+            }
+            if (j != 0) {
+                labels[i][j] = labels[i][j] < labels[i][j - 1] ? labels[i][j] : labels[i][j - 1];
+            }
+            if (i != m - 1) {
+                labels[i][j] = labels[i][j] < labels[i + 1][j] ? labels[i][j] : labels[i + 1][j];
+            }
+            if (j != n - 1) {
+                labels[i][j] = labels[i][j] < labels[i][j + 1] ? labels[i][j] : labels[i][j + 1];
+            }
+            if (current != labels[i][j]) {
+                changes++;
+            }
+        }
+    }
+
+    for (int i = m - 1; i >= 0; i--) {
+        for (int j = n - 1; j >= 0; j--) {
+            if (labels[i][j] == none) {
+                continue;
+            }
+            int current = labels[i][j];
+            if (i != 0) {
+                labels[i][j] = labels[i][j] < labels[i - 1][j] ? labels[i][j] : labels[i - 1][j];
+            }
+            if (j != 0) {
+                labels[i][j] = labels[i][j] < labels[i][j - 1] ? labels[i][j] : labels[i][j - 1];
+            }
+            if (i != m - 1) {
+                labels[i][j] = labels[i][j] < labels[i + 1][j] ? labels[i][j] : labels[i + 1][j];
+            }
+            if (j != n - 1) {
+                labels[i][j] = labels[i][j] < labels[i][j + 1] ? labels[i][j] : labels[i][j + 1];
+            }
+            if (current != labels[i][j]) {
+                changes++;
+            }
+        }
+    }
+
+    if (changes) {
+        label_brute();
+    }
+}
+
+void label_simple() {
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (space[i][j]) {
+                labels[i][j] = ++clusterCount;
+            }
+            else {
+                labels[i][j] = none;
+            }
+        }
+    }
+    label_brute();
+}
+
 int countClusters() {
     int * counts = new int[m * n];
     int count = 0;
@@ -155,14 +230,28 @@ int countClusters() {
     return count;
 }
 
+bool percolation() {
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if ((labels[0][i] == labels[m - 1][j]) && (labels[0][i] != none)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 int main() {
-    float p = 0.7;
-    generateSpace(p);
-    printSpace();
-    label(0,0);
-    cout << "p = " << p << " & clusters = " << countClusters() << endl;
-    printLabels();
-    cout << "Ran " << bigoh << " times" << endl;
-    cout << "Size " << m * n << endl;
+    for (double p = 0; p <= 1; p += 0.01) {
+        generateSpace(p);
+
+        label_simple();
+
+        cout << "p = " << p << "; clusters = " << countClusters();
+        if (percolation()) {
+            cout << "; percolation";
+        }
+        cout << endl;
+    }
     return 0;
 }
